@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "lexer.h"
+#include "parser.h"
+#include "ast.h"
+#include "codegen.h"
 
 static char *read_file(const char *path) {
     FILE *fp = fopen(path, "rb");
@@ -30,11 +33,28 @@ int main(int argc, char **argv) {
     
     char *source = read_file(argv[1]);
 
-    fprintf(stdout, "Here is the file: \n%s", source);
-
     Lexer lexer;
     lexer_init(&lexer, source);
-    print_lex(&lexer);
+
+    Parser parser;
+    parser_init(&parser, &lexer);
+
+    Node *ast = parser_start(&parser);
+
+    FILE *out = fopen("out.ll", "w");
+    if (!out) {
+        fprintf(stderr, "Could not open out.ll for writing.\n");
+        return 1;
+    }
+
+    codegen_start(out, ast);
+    fclose(out);
+
+    free_node(ast);
+    free(source);
+
+    fprintf(stdout, "Wrote: out.ll\n");
+    fprintf(stdout, "Run `clang out.ll`\n");
 
     return 0;
 }

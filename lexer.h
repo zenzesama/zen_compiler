@@ -20,7 +20,7 @@ typedef struct {
 } Token;
 
 typedef struct {
-    char *src;
+    const char *src;
     int pos;
 } Lexer;
 
