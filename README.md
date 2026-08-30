@@ -1,6 +1,7 @@
 # zen
 
 Compiler for a toy language called `zen`, written in C, targeting LLVM IR.
+<br>
 Currently handles arithmetic expressions: `+ - * / %`, unary `-`, parens.
 
 ## Run
