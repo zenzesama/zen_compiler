@@ -37,11 +37,11 @@ void free_node(Node *node) {
         case NODE_NUMBER:
             break;
         case NODE_BINARYOP:
-            free(node->left);
-            free(node->right);
+            free_node(node->left);
+            free_node(node->right);
             break;
         case NODE_NEG:
-            free(node->operand);
+            free_node(node->operand);
             break;
     }
     free(node);

@@ -38,13 +38,15 @@ static char *emit(FILE *out, Node *node) {
         char *right = emit(out, node->right);
 
         int id = ++temp_count;
-        fprintf(out, "%%%d = %s i32 %s, %s", id, op_instr(node->op), left, right);
+        fprintf(out, "%%%d = %s i32 %s, %s\n", id, op_instr(node->op), left, right);
         free(left);
         free(right);
         sprintf(buff, "%%%d", id);
         return buff;
     }
     
+    fprintf(stderr, "code gen error. Bad node type.\n");
+    return buff;
 }
 
 void codegen_start(FILE *out, Node *exp) {
@@ -57,8 +59,8 @@ void codegen_start(FILE *out, Node *exp) {
 
     char *result = emit(out, exp);
 
-    fprintf(out, "  call i32 (ptr, ...) @printf(ptr @fmt, i32 %s)\n", result);
-    fprintf(out, "  ret i32 0\n"); 
+    fprintf(out, "call i32 (ptr, ...) @printf(ptr @fmt, i32 %s)\n", result);
+    fprintf(out, "ret i32 0\n"); 
     fprintf(out, "}\n");
 
     free(result);

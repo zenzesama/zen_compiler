@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
     free(source);
 
     fprintf(stdout, "Wrote: out.ll\n");
-    fprintf(stdout, "Run `clang out.ll`\n");
+    fprintf(stdout, "Run `clang out.ll -o program`\n");
 
     return 0;
 }

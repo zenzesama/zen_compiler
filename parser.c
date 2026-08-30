@@ -43,7 +43,7 @@ static Node *parse_term(Parser *p) {
         char op = (p->current.type == TOKEN_STAR ? '*' 
                 : (p->current.type == TOKEN_SLASH ? '/' : '%'));
         advance(p);
-        Node *right = parse_term(p);
+        Node *right = parse_factor(p);
         left = make_binaryop(op, left, right);
     }
     return left;
