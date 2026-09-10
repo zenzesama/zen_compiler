@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -Wextra
-SRC = main.c lexer.c parser.c ast.c codegen.c
+CFLAGS = -Wall -Wextra -Wswitch
+SRC = main.c lexer.c parser.c ast.c codegen.c debug.c
 BIN = zenc
 
 

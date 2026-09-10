@@ -9,7 +9,7 @@ typedef struct {
     Token current;
 } Parser;
 
-void parser_init(Parser *, Lexer *);
-Node *parser_start(Parser *);
+void parser_init(Parser *parser, Lexer *lex);
+Node *parser_start(Parser *parser);
 
 #endif

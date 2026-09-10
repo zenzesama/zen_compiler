@@ -4,6 +4,6 @@
 #include <stdio.h>
 #include "ast.h"
 
-void codegen_start(FILE *, Node *);
+void codegen_start(FILE *out, Node *exp);
 
 #endif

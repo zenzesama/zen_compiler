@@ -11,12 +11,17 @@ typedef enum {
     TOKEN_LPAREN, 
     TOKEN_RPAREN, 
     TOKEN_SEMICOLON, 
-    TOKEN_EOF
+    TOKEN_EOF, 
+    TOKEN_ASSIGN, 
+    TOKEN_IDENTIFIER, 
+    TOKEN_VAR, 
+    TOKEN_INT
 } TokenType;
 
 typedef struct {
     TokenType type;
     int value;
+    char text[64];
 } Token;
 
 typedef struct {
@@ -24,7 +29,7 @@ typedef struct {
     int pos;
 } Lexer;
 
-void lexer_init(Lexer *, const char *);
-Token lexer_next(Lexer *);
+void lexer_init(Lexer *lex, const char *source);
+Token lexer_next(Lexer *lex);
 
 #endif

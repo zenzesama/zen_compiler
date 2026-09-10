@@ -17,3 +17,10 @@ Currently handles arithmetic expressions: `+ - * / %`, unary `-`, parens.
     ast.c/h      tree node type
     codegen.c/h  AST -> LLVM IR
     main.c       wires the above together, reads the file, writes out.ll
+
+
+## Language Grammar
+    expression -> term ( ("+" | "-") term )*
+    term       -> factor ( ("*" | "/" | "%") factor )*
+    factor     -> "-" factor | primary
+    primary    -> NUMBER | "(" expression ")"

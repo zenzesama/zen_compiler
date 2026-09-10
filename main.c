@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "lexer.h"
 #include "parser.h"
 #include "ast.h"
 #include "codegen.h"
+#include "debug.h"
 
 static char *read_file(const char *path) {
     FILE *fp = fopen(path, "rb");
@@ -26,16 +28,32 @@ static char *read_file(const char *path) {
 }
 
 int main(int argc, char **argv) {
-    if (argc < 2) {
-        fprintf(stderr, "Please give file to compile.\n");
+    int lexerTest = 0;
+    int opt;
+    
+    while ((opt = getopt(argc, argv, "d")) != -1) {
+        switch (opt) {
+            case 'd':
+                lexerTest = 1;
+                break;
+            default:
+                fprintf(stderr, "Please provide a file and flags.\n");
+                return 1;
+        }
+    }
+
+    if (optind >= argc) {
+        fprintf(stderr, "Please provide a file to compile.\n");
         return 1;
     }
     
-    char *source = read_file(argv[1]);
+    char *source = read_file(argv[optind]);
 
     Lexer lexer;
     lexer_init(&lexer, source);
 
+    if (lexerTest) lexer_test(&lexer);
+/*
     Parser parser;
     parser_init(&parser, &lexer);
 
@@ -55,6 +73,6 @@ int main(int argc, char **argv) {
 
     fprintf(stdout, "Wrote: out.ll\n");
     fprintf(stdout, "Run `clang out.ll -o program`\n");
-
+*/
     return 0;
 }

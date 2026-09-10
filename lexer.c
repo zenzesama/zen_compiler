@@ -1,7 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 #include "lexer.h"
+
+typedef struct {
+    const char *text;
+    TokenType type;
+} Keyword;
+
+static Keyword keywords[] = {
+    {"var", TOKEN_VAR}, 
+    {"int", TOKEN_INT}
+};
+
+#define NUM_KEYWORDS (sizeof(keywords) / sizeof(keywords[0]))
+
+static TokenType keyword_or_identifier(const char *text) {
+    for (size_t i = 0; i < NUM_KEYWORDS; i++) {
+        if (strcmp(keywords[i].text, text) == 0) return keywords[i].type;
+    }
+    
+    return TOKEN_IDENTIFIER;
+}
 
 void lexer_init(Lexer *lex, const char *source) {
     lex->src = source;
@@ -22,7 +43,7 @@ Token lexer_next(Lexer *lex) {
     }
 
     char c = peek(lex);
-    Token t;
+    Token t = {0};
 
     if (c == '\0') {
         t.type = TOKEN_EOF;
@@ -53,7 +74,32 @@ Token lexer_next(Lexer *lex) {
         return t;
     }
 
-    advance(lex);
+    if (isalpha(c) || c == '_') {
+        int start = lex->pos;
+
+        while (isalnum((unsigned char)peek(lex)) || peek(lex) == '_') {
+            advance(lex);
+        }
+
+        int len = lex->pos - start;
+        char buff[64];
+
+        if (len >= (int)sizeof(buff)) 
+            len = sizeof(buff) - 1;
+
+        for (int i = 0; i < len; i++) 
+            buff[i] = lex->src[start + i];
+        buff[len] = '\0';
+        
+        TokenType type = keyword_or_identifier(buff);
+        t.type = type;
+
+        if (type == TOKEN_IDENTIFIER) {
+            strcpy(t.text, buff);
+        }
+
+        return t;
+    }
 
     switch (c) {
         case '+':
@@ -80,10 +126,15 @@ Token lexer_next(Lexer *lex) {
         case ';':
             t.type = TOKEN_SEMICOLON;
             break;
+        case '=':
+            t.type = TOKEN_ASSIGN;
+            break;
         default:
             fprintf(stderr, "Lexer error: Unexpected token %c.\n", c);
             exit(1);
     }
+
+    advance(lex);
 
     return t;
 }
