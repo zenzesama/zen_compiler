@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "parser.h"
 
 static void advance(Parser *p) {
@@ -19,10 +20,52 @@ void parser_init(Parser *p, Lexer *l) {
     advance(p);
 }
 
+static Node *parse_statement(Parser *p);
+static Node *parse_var_decl(Parser *p);
+static Node *parse_expr_stmt(Parser *p);
 static Node *parse_expression(Parser *p);
 static Node *parse_term(Parser *p);
 static Node *parse_factor(Parser *p);
 static Node *parse_primary(Parser *p);
+
+static Node *parse_statement(Parser *p) {
+    if (p->current.type == TOKEN_VAR) {
+        return parse_var_decl(p);
+    }
+    return parse_expr_stmt(p);
+}
+
+static Node *parse_var_decl(Parser *p) {
+    expect(p, TOKEN_VAR, "'var'");
+    expect(p, TOKEN_INT, "'int'");
+    char name[64];
+    strcpy(name, p->current.text);
+    expect(p, TOKEN_IDENTIFIER, "'identifier'");
+
+    Node *init = NULL;
+    if (p->current.type == TOKEN_ASSIGN) {
+        advance(p);
+        init = parse_expression(p);
+    }
+    expect(p, TOKEN_SEMICOLON, "';'");
+    return make_var_decl(name, init);
+}
+
+static Node *parse_expr_stmt(Parser *p) {
+    Node *expr = parse_expression(p);
+    if (expr->type == NODE_IDENTIFIER && p->current.type == TOKEN_ASSIGN) {
+        char name[64];
+        strcpy(name, expr->name);
+        advance(p);
+
+        Node *rhs = parse_expression(p);
+        free_node(expr);
+        
+        expr = make_assign(name, rhs);
+    }
+    expect(p, TOKEN_SEMICOLON, "';'");
+    return expr;
+}
 
 static Node *parse_expression(Parser *p) {
     Node *left = parse_term(p);
@@ -69,12 +112,22 @@ static Node *parse_primary(Parser *p) {
         expect(p, TOKEN_RPAREN, "')'");
         return n;
     }
-    fprintf(stderr, "Parser error: Expected a number or (.\n");
+    if (p->current.type == TOKEN_IDENTIFIER) {
+        Node *n = make_identifier(p->current.text);
+        advance(p);
+        return n;
+    }
+    fprintf(stderr, "Parser error: Expected a number, '(' or Identifier.\n");
     exit(1);
 }
 
-Node *parser_start(Parser *p) {
-    Node *expr = parse_expression(p);
-    expect(p, TOKEN_SEMICOLON, "';'");
-    return expr;
+void parser_start(Parser *p, Program *prgm) {
+    prgm->count = 0;
+    while (p->current.type != TOKEN_EOF) {
+        if (prgm->count >= 256) {
+            fprintf(stderr, "Parser error: Program can't be more than 256 statements.\n");
+            exit(1);
+        }
+        prgm->statements[prgm->count++] = parse_statement(p);
+    }
 }

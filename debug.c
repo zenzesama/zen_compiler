@@ -23,8 +23,8 @@ static const char *token_type_name(TokenType type) {
 
 static void print_token(Token t) {
     printf("%-12s", token_type_name(t.type));
-    if (t.type == TOKEN_NUMBER) printf(" value=%d", t.value);
-    if (t.type == TOKEN_IDENTIFIER) printf(" text=\"%s\"", t.text);
+    if (t.type == TOKEN_NUMBER) printf(" value = %d", t.value);
+    if (t.type == TOKEN_IDENTIFIER) printf(" text = \"%s\"", t.text);
     printf("\n");
 }
 
@@ -36,7 +36,7 @@ void lexer_test(Lexer *lex) {
     }
 }
 
-void ast_test(Node *node, int depth) {
+static void ast_test(Node *node, int depth) {    
     if (!node) return;
 
     for (int i = 0; i < depth; i++) printf("  ");
@@ -65,5 +65,12 @@ void ast_test(Node *node, int depth) {
             printf("ASSIGN \"%s\"\n", node->name);
             ast_test(node->operand, depth + 1);
             break;
+    }
+}
+
+void program_test(Program *prgm) {
+    for (int i = 0; i < prgm->count; i++) {
+        printf("[%d]\n", i);
+        ast_test(prgm->statements[i], 1);
     }
 }

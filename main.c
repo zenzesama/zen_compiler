@@ -28,13 +28,14 @@ static char *read_file(const char *path) {
 }
 
 int main(int argc, char **argv) {
-    int lexerTest = 0;
+    int lexerTest = 0, prgmTest = 0;
     int opt;
     
     while ((opt = getopt(argc, argv, "d")) != -1) {
         switch (opt) {
             case 'd':
                 lexerTest = 1;
+                prgmTest = 1;
                 break;
             default:
                 fprintf(stderr, "Please provide a file and flags.\n");
@@ -52,13 +53,22 @@ int main(int argc, char **argv) {
     Lexer lexer;
     lexer_init(&lexer, source);
 
-    if (lexerTest) lexer_test(&lexer);
-/*
+    if (lexerTest) {
+        Lexer dbgLex;
+        lexer_init(&dbgLex, source);
+        lexer_test(&dbgLex);
+    }
+
     Parser parser;
     parser_init(&parser, &lexer);
 
-    Node *ast = parser_start(&parser);
-
+    Program program;
+    parser_start(&parser, &program);
+    
+    if (prgmTest) {
+        program_test(&program);
+    }
+/*
     FILE *out = fopen("out.ll", "w");
     if (!out) {
         fprintf(stderr, "Could not open out.ll for writing.\n");

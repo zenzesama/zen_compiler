@@ -10,6 +10,6 @@ typedef struct {
 } Parser;
 
 void parser_init(Parser *parser, Lexer *lex);
-Node *parser_start(Parser *parser);
+void parser_start(Parser *parser, Program *program);
 
 #endif

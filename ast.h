@@ -23,7 +23,7 @@ typedef struct Node {
 typedef struct {
     Node *statements[256];
     int count;
-} Programs;
+} Program;
 
 Node *make_number(int value);
 Node *make_binaryop(char op, Node *left, Node *right);

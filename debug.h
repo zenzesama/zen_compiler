@@ -5,6 +5,6 @@
 #include "ast.h"
 
 void lexer_test(Lexer *lex);
-void ast_test(Node *node, int depth);
+void program_test(Program *program);
 
 #endif
