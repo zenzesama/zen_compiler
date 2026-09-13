@@ -1,1 +1,4 @@
 var int a = 2;
+var int b = 4;
+
+var int a_plus_b = a + b;

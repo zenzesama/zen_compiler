@@ -68,21 +68,24 @@ int main(int argc, char **argv) {
     if (prgmTest) {
         program_test(&program);
     }
-/*
+
     FILE *out = fopen("out.ll", "w");
     if (!out) {
         fprintf(stderr, "Could not open out.ll for writing.\n");
         return 1;
     }
 
-    codegen_start(out, ast);
+    codegen_start(out, &program);
     fclose(out);
 
-    free_node(ast);
+    for (int i = 0; i < program.count; i++) {
+        free_node(program.statements[i]);
+    }
+
     free(source);
 
     fprintf(stdout, "Wrote: out.ll\n");
     fprintf(stdout, "Run `clang out.ll -o program`\n");
-*/
+
     return 0;
 }
