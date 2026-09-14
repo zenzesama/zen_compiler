@@ -7,7 +7,8 @@ typedef enum {
     NODE_NEG, 
     NODE_IDENTIFIER, 
     NODE_VAR_DECL, 
-    NODE_ASSIGN
+    NODE_ASSIGN, 
+    NODE_PRINT
 } NodeType;
 
 typedef struct Node {
@@ -31,6 +32,7 @@ Node *make_neg(Node *operand);
 Node *make_identifier(char *name);
 Node *make_var_decl(char *name, Node *init);
 Node *make_assign(char *name, Node *value);
+Node *make_print(Node *operand);
 void free_node(Node *node);
 
 #endif

@@ -2,7 +2,7 @@
 
 Compiler for a toy language called `zen`, written in C, targeting LLVM IR.
 <br>
-Currently handles arithmetic expressions: `+ - * / %`, unary `-`, parens and integer variables that can be declared with `var int a = 2;`. Use `-d` flag for debug mode.
+Currently handles arithmetic expressions: `+ - * / %`, unary `-`, parens, integer variables (`var int a = 2;`), and `print(expr);`. Use `-d` flag for debug mode.
 
 ## Run
     make zenc
@@ -16,15 +16,16 @@ Currently handles arithmetic expressions: `+ - * / %`, unary `-`, parens and int
     parser.c/h   tokens -> AST
     ast.c/h      tree node type
     codegen.c/h  AST -> LLVM IR
-    debug.c/.h   optional debug mode for compiler, reads out the tokens and parsed peogram.
+    debug.c/.h   optional debug mode for compiler, reads out the tokens and parsed program.
     main.c       wires the above together, reads the file, writes out.ll
 
 
 ## Language Grammar
     program    -> statement* EOF
-    statement  -> varDecl | exprStmt
+    statement  -> varDecl | exprStmt | printStmt
     varDecl    -> "var" type IDENTIFIER ( "=" expression )? ";"
     exprStmt   -> expression ";"
+    printStmt  -> "print" "(" expression ")" ";"
     type       -> "int"
     expression -> assignment
     assignment -> IDENTIFIER "=" assignment | term

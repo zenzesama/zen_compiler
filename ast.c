@@ -56,6 +56,14 @@ Node *make_assign(char *name, Node *value) {
     return n;
 }
 
+Node *make_print(Node *operand) {
+    Node *n = malloc(sizeof(Node));
+
+    n->type = NODE_PRINT;
+    n->operand = operand;
+    return n;
+}
+
 void free_node(Node *node) {
     if (!node) 
         return;
@@ -76,6 +84,9 @@ void free_node(Node *node) {
             free_node(node->operand);
             break;
         case NODE_ASSIGN:
+            free_node(node->operand);
+            break;
+        case NODE_PRINT:
             free_node(node->operand);
             break;
     }

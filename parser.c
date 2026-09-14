@@ -23,12 +23,16 @@ void parser_init(Parser *p, Lexer *l) {
 static Node *parse_statement(Parser *p);
 static Node *parse_var_decl(Parser *p);
 static Node *parse_expr_stmt(Parser *p);
+static Node *parse_print_stmt(Parser *p);
 static Node *parse_expression(Parser *p);
 static Node *parse_term(Parser *p);
 static Node *parse_factor(Parser *p);
 static Node *parse_primary(Parser *p);
 
 static Node *parse_statement(Parser *p) {
+    if (p->current.type == TOKEN_PRINT) {
+        return parse_print_stmt(p);
+    }
     if (p->current.type == TOKEN_VAR) {
         return parse_var_decl(p);
     }
@@ -67,6 +71,15 @@ static Node *parse_expr_stmt(Parser *p) {
     return expr;
 }
 
+static Node *parse_print_stmt(Parser *p) {
+    expect(p, TOKEN_PRINT, "'print'");
+    expect(p, TOKEN_LPAREN, "'('");
+    Node *expr = parse_expression(p);
+    expect(p, TOKEN_RPAREN, "')'");
+    expect(p, TOKEN_SEMICOLON, "';'");
+    return make_print(expr);
+
+}
 static Node *parse_expression(Parser *p) {
     Node *left = parse_term(p);
     while (p->current.type == TOKEN_PLUS || p->current.type == TOKEN_MINUS) {

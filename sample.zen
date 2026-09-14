@@ -1,4 +1,6 @@
 var int a = 2;
-var int b = 4;
+var int b;
+b = 4;
 
-var int a_plus_b = a + b;
+var int sum = a + b;
+print(sum);

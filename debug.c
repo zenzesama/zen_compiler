@@ -17,6 +17,7 @@ static const char *token_type_name(TokenType type) {
         case TOKEN_IDENTIFIER: return "IDENTIFIER";
         case TOKEN_VAR:        return "VAR";
         case TOKEN_INT:        return "INT";
+        case TOKEN_PRINT:      return "PRINT";
         default:               return "UNKNOWN";
     }
 }
@@ -65,6 +66,9 @@ static void ast_test(Node *node, int depth) {
             printf("ASSIGN \"%s\"\n", node->name);
             ast_test(node->operand, depth + 1);
             break;
+        case NODE_PRINT:
+            printf("PRINT\n");
+            ast_test(node->operand, depth + 1);
     }
 }
 

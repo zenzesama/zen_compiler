@@ -11,7 +11,8 @@ typedef struct {
 
 static Keyword keywords[] = {
     {"var", TOKEN_VAR}, 
-    {"int", TOKEN_INT}
+    {"int", TOKEN_INT}, 
+    {"print", TOKEN_PRINT}
 };
 
 #define NUM_KEYWORDS (sizeof(keywords) / sizeof(keywords[0]))
@@ -89,6 +90,7 @@ Token lexer_next(Lexer *lex) {
 
         for (int i = 0; i < len; i++) 
             buff[i] = lex->src[start + i];
+
         buff[len] = '\0';
         
         TokenType type = keyword_or_identifier(buff);
