@@ -42,4 +42,4 @@ Currently handles arithmetic expressions: `+ - * / %`, unary `-`, parens, intege
     term       -> factor ( ( "+" | "-" ) factor )*
     factor     -> unary ( ( "*" | "/" | "%" ) unary )*
     unary      -> "-" unary | primary
-    primary    -> NUMBER | IDENTIFIER | "(" expression ")"
+    primary    -> NUMBER | IDENTIFIER | "(" expression ")" 

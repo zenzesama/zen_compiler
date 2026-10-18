@@ -3,22 +3,37 @@
 
 static const char *token_type_name(TokenType type) {
     switch (type) {
-        case TOKEN_NUMBER:     return "NUMBER";
-        case TOKEN_PLUS:       return "PLUS";
-        case TOKEN_MINUS:      return "MINUS";
-        case TOKEN_STAR:       return "STAR";
-        case TOKEN_SLASH:      return "SLASH";
-        case TOKEN_PERCENT:    return "PERCENT";
-        case TOKEN_LPAREN:     return "LPAREN";
-        case TOKEN_RPAREN:     return "RPAREN";
-        case TOKEN_SEMICOLON:  return "SEMICOLON";
-        case TOKEN_EOF:        return "EOF";
-        case TOKEN_ASSIGN:     return "ASSIGN";
-        case TOKEN_IDENTIFIER: return "IDENTIFIER";
-        case TOKEN_VAR:        return "VAR";
-        case TOKEN_INT:        return "INT";
-        case TOKEN_PRINT:      return "PRINT";
-        default:               return "UNKNOWN";
+        case TOKEN_NUMBER:              return "NUMBER";
+        case TOKEN_PLUS:                return "PLUS";
+        case TOKEN_MINUS:               return "MINUS";
+        case TOKEN_STAR:                return "STAR";
+        case TOKEN_SLASH:               return "SLASH";
+        case TOKEN_PERCENT:             return "PERCENT";
+        case TOKEN_LPAREN:              return "LPAREN";
+        case TOKEN_RPAREN:              return "RPAREN";
+        case TOKEN_SEMICOLON:           return "SEMICOLON";
+        case TOKEN_EOF:                 return "EOF";
+        case TOKEN_ASSIGN:              return "ASSIGN";
+        case TOKEN_IDENTIFIER:          return "IDENTIFIER";
+        case TOKEN_VAR:                 return "VAR";
+        case TOKEN_INT:                 return "INT";
+        case TOKEN_PRINT:               return "PRINT";
+        case TOKEN_IF:                  return "IF";
+        case TOKEN_ELSE:                return "ELSE";
+        case TOKEN_EQUAL:               return "EQUAL";
+        case TOKEN_NOT_EQUAL:           return "NOT EQUAL";
+        case TOKEN_LESS_THAN:           return "LESS THAN";
+        case TOKEN_LESS_THAN_EQUAL:     return "LESS THAN EQUAL";
+        case TOKEN_GREATER_THAN:        return "GREATER THAN";
+        case TOKEN_GREATER_THAN_EQUAL:  return "GREATER THAN EQUAL";
+        case TOKEN_LOGIC_NOT:           return "LOGIC NOT";
+        case TOKEN_LOGIC_AND:           return "LOGIC AND";
+        case TOKEN_AND:                 return "AND";
+        case TOKEN_LOGIC_OR:            return "LOGIC OR";
+        case TOKEN_OR:                  return "OR";
+        case TOKEN_LBRACE:              return "LBRACE";
+        case TOKEN_RBRACE:              return "RBRACE";
+        default:                        return "UNKNOWN";
     }
 }
 

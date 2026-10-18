@@ -34,6 +34,7 @@ static void declare_name(const char *name) {
     }
     if (declared_count >= 128) {
         fprintf(stderr, "Code gen error: Too many variables, cap is 128.\n");
+        exit(1);
     }
     strcpy(declared[declared_count++], name);
 }

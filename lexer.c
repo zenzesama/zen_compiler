@@ -12,7 +12,9 @@ typedef struct {
 static Keyword keywords[] = {
     {"var", TOKEN_VAR}, 
     {"int", TOKEN_INT}, 
-    {"print", TOKEN_PRINT}
+    {"print", TOKEN_PRINT}, 
+    {"if", TOKEN_IF}, 
+    {"else", TOKEN_ELSE}
 };
 
 #define NUM_KEYWORDS (sizeof(keywords) / sizeof(keywords[0]))
@@ -32,6 +34,10 @@ void lexer_init(Lexer *lex, const char *source) {
 
 static char peek(Lexer *lex) {
     return lex->src[lex->pos];
+}
+
+static char peek_next(Lexer *lex) {
+    return lex->src[lex->pos + 1];
 }
 
 static char advance(Lexer *lex) {
@@ -129,7 +135,64 @@ Token lexer_next(Lexer *lex) {
             t.type = TOKEN_SEMICOLON;
             break;
         case '=':
-            t.type = TOKEN_ASSIGN;
+            if (peek_next(lex) == '=') {
+                t.type = TOKEN_EQUAL;
+                advance(lex);
+            }
+            else {
+                t.type = TOKEN_ASSIGN;
+            }
+            break;
+        case '!':
+            if (peek_next(lex) == '=') {
+                t.type = TOKEN_NOT_EQUAL;
+                advance(lex);
+            }
+            else {
+                t.type = TOKEN_LOGIC_NOT;
+            }
+            break;
+        case '<':
+            if (peek_next(lex) == '=') {
+                t.type = TOKEN_LESS_THAN_EQUAL;
+                advance(lex);
+            }
+            else {
+                t.type = TOKEN_LESS_THAN;
+            }
+            break;
+        case '>':
+            if (peek_next(lex) == '=') {
+                t.type = TOKEN_GREATER_THAN_EQUAL;
+                advance(lex);
+            }
+            else {
+                t.type = TOKEN_GREATER_THAN;
+            }
+            break;
+        case '&':
+            if (peek_next(lex) == '&') {
+                t.type = TOKEN_LOGIC_AND;
+                advance(lex);
+            }
+            else {
+                t.type = TOKEN_AND;
+            }
+            break;
+        case '|':
+            if (peek_next(lex) == '|') {
+                t.type = TOKEN_LOGIC_OR;
+                advance(lex);
+            }
+            else {
+                t.type = TOKEN_OR;
+            }
+            break;
+        case '{':
+            t.type = TOKEN_LBRACE;
+            break;
+        case '}':
+            t.type = TOKEN_RBRACE;
             break;
         default:
             fprintf(stderr, "Lexer error: Unexpected token %c.\n", c);
