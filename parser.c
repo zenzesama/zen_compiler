@@ -83,7 +83,7 @@ static Node *parse_print_stmt(Parser *p) {
 static Node *parse_expression(Parser *p) {
     Node *left = parse_term(p);
     while (p->current.type == TOKEN_PLUS || p->current.type == TOKEN_MINUS) {
-        char op = (p->current.type == TOKEN_PLUS) ? '+' : '-';
+        OpKind op = (p->current.type == TOKEN_PLUS) ? OP_ADD : OP_SUB;
         advance(p);
         Node *right = parse_term(p);
         left = make_binaryop(op, left, right);
@@ -96,8 +96,8 @@ static Node *parse_term(Parser *p) {
     while (p->current.type == TOKEN_STAR ||
            p->current.type == TOKEN_SLASH || 
            p->current.type == TOKEN_PERCENT) {
-        char op = (p->current.type == TOKEN_STAR ? '*' 
-                : (p->current.type == TOKEN_SLASH ? '/' : '%'));
+        OpKind op = (p->current.type == TOKEN_STAR ? OP_MUL 
+                : (p->current.type == TOKEN_SLASH ? OP_DIV : OP_MOD));
         advance(p);
         Node *right = parse_factor(p);
         left = make_binaryop(op, left, right);

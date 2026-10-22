@@ -9,13 +9,13 @@ static int temp_count = 0;
 static char declared[128][64];
 static int declared_count = 0;
 
-static const char *op_instr(char op) {
+static const char *op_instr(OpKind op) {
     switch (op) {
-        case '+' : return "add";
-        case '-' : return "sub";
-        case '*' : return "mul";
-        case '/' : return "sdiv";
-        case '%' : return "srem";
+        case OP_ADD : return "add";
+        case OP_SUB : return "sub";
+        case OP_MUL : return "mul";
+        case OP_DIV : return "sdiv";
+        case OP_MOD : return "srem";
         default : return "add";
     }
 }

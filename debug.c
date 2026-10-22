@@ -37,6 +37,25 @@ static const char *token_type_name(TokenType type) {
     }
 }
 
+static const char *op_name(OpKind op) {
+    switch (op) {
+        case OP_ADD: return "+";
+        case OP_SUB: return "-";
+        case OP_MUL: return "*";
+        case OP_DIV: return "/";
+        case OP_MOD: return "%";
+        case OP_EQ:  return "==";
+        case OP_NEQ: return "!=";
+        case OP_LT:  return "<";
+        case OP_LTE: return "<=";
+        case OP_GT:  return ">";
+        case OP_GTE: return ">=";
+        case OP_AND: return "&&";
+        case OP_OR:  return "||";
+        default:     return "UNKNOWN";
+    }
+}
+
 static void print_token(Token t) {
     printf("%-12s", token_type_name(t.type));
     if (t.type == TOKEN_NUMBER) printf(" value = %d", t.value);
@@ -62,7 +81,7 @@ static void ast_test(Node *node, int depth) {
             printf("NUMBER %d\n", node->number);
             break;
         case NODE_BINARYOP:
-            printf("BINARY OP '%c'\n", node->op);
+            printf("BINARY OP '%s'\n", op_name(node->op));
             ast_test(node->left, depth + 1);
             ast_test(node->right, depth + 1);
             break;
@@ -84,6 +103,33 @@ static void ast_test(Node *node, int depth) {
         case NODE_PRINT:
             printf("PRINT\n");
             ast_test(node->operand, depth + 1);
+            break;
+        case NODE_NOT:
+            printf("NOT\n");
+            ast_test(node->operand, depth + 1);
+            break;
+        case NODE_BLOCK:
+            {
+            printf("BLOCK\n");
+            int n = node->stmt_count;
+            for (int i = 0; i < n; i++) {
+                ast_test(node->statements[i], depth + 1);
+            }
+            break;
+            }
+        case NODE_IF:
+            printf("IF\n");
+            for (int i = 0; i < depth; i++) printf("  ");
+            printf("COND ");
+            ast_test(node->condition, depth + 2);
+            for (int i = 0; i < depth; i++) printf("  ");
+            printf("THEN ");
+            ast_test(node->then_branch, depth + 2);
+            if (node->else_branch != NULL) {
+                printf("\t ELSE ");
+                ast_test(node->else_branch, depth + 2);
+            }
+            break;
     }
 }
 
