@@ -20,23 +20,39 @@ void parser_init(Parser *p, Lexer *l) {
     advance(p);
 }
 
+static Node *parse_expression(Parser *p);
 static Node *parse_statement(Parser *p);
 static Node *parse_var_decl(Parser *p);
 static Node *parse_expr_stmt(Parser *p);
 static Node *parse_print_stmt(Parser *p);
-static Node *parse_expression(Parser *p);
+static Node *parse_block(Parser *p);
+static Node *parse_if_stmt(Parser *p);
+static Node *parse_logic_or(Parser *p);
+static Node *parse_logic_and(Parser *p);
+static Node *parse_logic_equality(Parser *p);
+static Node *parse_logic_comparison(Parser *p);
+static Node *parse_additive(Parser *p);
 static Node *parse_term(Parser *p);
 static Node *parse_factor(Parser *p);
 static Node *parse_primary(Parser *p);
 
+static Node *parse_expression(Parser *p) {
+    return parse_logic_or(p);
+}
+
 static Node *parse_statement(Parser *p) {
-    if (p->current.type == TOKEN_PRINT) {
-        return parse_print_stmt(p);
+    switch(p->current.type) {
+        case TOKEN_PRINT:
+            return parse_print_stmt(p);
+        case TOKEN_VAR:
+            return parse_var_decl(p);
+        case TOKEN_IF:
+            return parse_if_stmt(p);
+        case TOKEN_LBRACE:
+            return parse_block(p);
+        default:
+            return parse_expr_stmt(p);
     }
-    if (p->current.type == TOKEN_VAR) {
-        return parse_var_decl(p);
-    }
-    return parse_expr_stmt(p);
 }
 
 static Node *parse_var_decl(Parser *p) {
@@ -80,7 +96,91 @@ static Node *parse_print_stmt(Parser *p) {
     return make_print(expr);
 
 }
-static Node *parse_expression(Parser *p) {
+
+static Node *parse_block(Parser *p) {
+    expect(p, TOKEN_LBRACE, "'{'");
+    Node *b = make_block();
+    while (p->current.type != TOKEN_RBRACE) {
+        if (p->current.type == TOKEN_EOF) {
+            fprintf(stderr, "Parser error: Expected '}'\n");
+            exit(1);
+        }
+        block_add(b, parse_statement(p));
+    }
+    expect(p, TOKEN_RBRACE, "'}'");
+    return b;
+}
+
+static Node *parse_if_stmt(Parser *p) {
+    expect(p, TOKEN_IF, "'if'");
+    expect(p, TOKEN_LPAREN, "'('");
+    Node *cond = parse_expression(p);
+    expect(p, TOKEN_RPAREN, "')'");
+    Node *then = parse_block(p);
+    Node *else_b = NULL;
+    if (p->current.type == TOKEN_ELSE) {
+        advance(p);
+        if (p->current.type == TOKEN_IF) {
+            else_b = parse_if_stmt(p);
+        }
+        else {
+            else_b = parse_block(p);
+        }
+    }
+    return make_if(cond, then, else_b);
+}
+
+static Node *parse_logic_or(Parser *p) {
+    Node *left = parse_logic_and(p);
+    while (p->current.type == TOKEN_LOGIC_OR) {
+        OpKind op = OP_OR;
+        advance(p);
+        Node *right = parse_logic_and(p);
+        left = make_binaryop(op, left, right);
+    }
+    return left;
+}
+
+static Node *parse_logic_and(Parser *p) {
+    Node *left = parse_logic_equality(p);
+    while (p->current.type == TOKEN_LOGIC_AND) {
+        OpKind op = OP_AND;
+        advance(p);
+        Node *right = parse_logic_equality(p);
+        left = make_binaryop(op, left, right);
+    }
+    return left;
+}
+
+static Node *parse_logic_equality(Parser *p) {
+    Node *left = parse_logic_comparison(p);
+    while (p->current.type == TOKEN_EQUAL ||
+           p->current.type == TOKEN_NOT_EQUAL) {
+        OpKind op = (p->current.type == TOKEN_EQUAL ? OP_EQ : OP_NEQ);
+        advance(p);
+        Node *right = parse_logic_comparison(p);
+        left = make_binaryop(op, left, right);
+    }
+    return left;
+}
+
+static Node *parse_logic_comparison(Parser *p) {
+    Node *left = parse_additive(p);
+    while (p->current.type == TOKEN_LESS_THAN ||
+           p->current.type == TOKEN_LESS_THAN_EQUAL ||
+           p->current.type == TOKEN_GREATER_THAN ||
+           p->current.type == TOKEN_GREATER_THAN_EQUAL) {
+        OpKind op = (p->current.type == TOKEN_LESS_THAN ? OP_LT : 
+                    (p->current.type == TOKEN_LESS_THAN_EQUAL ? OP_LTE :
+                    (p->current.type == TOKEN_GREATER_THAN ? OP_GT : OP_GTE)));
+        advance(p);
+        Node *right = parse_additive(p);
+        left = make_binaryop(op, left, right);
+    }
+    return left;
+}
+
+static Node *parse_additive(Parser *p) {
     Node *left = parse_term(p);
     while (p->current.type == TOKEN_PLUS || p->current.type == TOKEN_MINUS) {
         OpKind op = (p->current.type == TOKEN_PLUS) ? OP_ADD : OP_SUB;
@@ -101,6 +201,7 @@ static Node *parse_term(Parser *p) {
         advance(p);
         Node *right = parse_factor(p);
         left = make_binaryop(op, left, right);
+        
     }
     return left;
 }
@@ -109,6 +210,10 @@ static Node *parse_factor(Parser *p) {
     if (p->current.type == TOKEN_MINUS) {
         advance(p);
         return make_neg(parse_factor(p));
+    }
+    if (p->current.type == TOKEN_LOGIC_NOT) {
+        advance(p);
+        return make_not(parse_factor(p));
     }
     return parse_primary(p);
 }

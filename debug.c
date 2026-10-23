@@ -120,13 +120,13 @@ static void ast_test(Node *node, int depth) {
         case NODE_IF:
             printf("IF\n");
             for (int i = 0; i < depth; i++) printf("  ");
-            printf("COND ");
+            printf("COND\n");
             ast_test(node->condition, depth + 2);
             for (int i = 0; i < depth; i++) printf("  ");
-            printf("THEN ");
+            printf("THEN\n");
             ast_test(node->then_branch, depth + 2);
             if (node->else_branch != NULL) {
-                printf("\t ELSE ");
+                printf("ELSE\n");
                 ast_test(node->else_branch, depth + 2);
             }
             break;
