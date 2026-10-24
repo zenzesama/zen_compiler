@@ -1,17 +1,9 @@
-var int a = 2;
-var int b;
-b = 4;
-
-if (a < b) {
+var int a = 7;
+var int b = 3;
+var int sum = a + b;
+print(sum);
+if (a > b && b != 0) {
     print(a);
 } else {
     print(b);
-}
-
-if (a > b && a >= b) {
-    print(a);
-}
-
-if (a == b || a != b && !(a <= b)) {
-    print(1);
 }

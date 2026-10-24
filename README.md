@@ -2,17 +2,19 @@
 
 Compiler for a toy language called `zen`, written in C, targeting LLVM IR.
 <br>
-Currently handles arithmetic expressions: `+ - * / %`, unary `-`, parens, integer variables (`var int a = 2;`), and `print(expr);`. Use `-d` flag for debug mode.
+Handles integer variables (`var int a = 2;`), arithmetic `+ - * / %`, unary `-` and `!`, comparisons `== != < <= > >=`, logic `&& ||`, `if`/`else` with `{ }` blocks, and `print(expr);`. Use the `-d` flag for debug mode (token dump and AST).
 
 ## Example
-    var int a = 2;
-    var int b = 8;
+    var int a = 7;
+    var int b = 3;
     var int sum = a + b;
     print(sum);
 
-    var int x;
-    x = a * b - 2;
-    print(x);
+    if (a > b && b != 0) {
+        print(a);
+    } else {
+        print(b);
+    }
 
 ## Run
     make zenc
@@ -20,26 +22,35 @@ Currently handles arithmetic expressions: `+ - * / %`, unary `-`, parens, intege
     clang out.ll -o program
     ./program
 
-
 ## Files
     lexer.c/h    source text -> tokens
     parser.c/h   tokens -> AST
     ast.c/h      tree node type
     codegen.c/h  AST -> LLVM IR
-    debug.c/.h   optional debug mode for compiler, reads out the tokens and parsed program.
+    debug.c/.h   optional debug mode, prints the tokens and parsed program
     main.c       wires the above together, reads the file, writes out.ll
 
+## Notes
+    - int is the only type; nonzero is true
+    - && and || evaluate both sides (no short-circuit)
+    - variables are not block-scoped
 
 ## Language Grammar
     program    -> statement* EOF
-    statement  -> varDecl | exprStmt | printStmt
+    statement  -> varDecl | assignStmt | exprStmt | printStmt | ifStmt | block
     varDecl    -> "var" type IDENTIFIER ( "=" expression )? ";"
+    assignStmt -> IDENTIFIER "=" expression ";"
     exprStmt   -> expression ";"
     printStmt  -> "print" "(" expression ")" ";"
+    ifStmt     -> "if" "(" expression ")" block ( "else" ( ifStmt | block ) )?
+    block      -> "{" statement* "}"
     type       -> "int"
-    expression -> assignment
-    assignment -> IDENTIFIER "=" assignment | term
+    expression -> logic_or
+    logic_or   -> logic_and ( "||" logic_and )*
+    logic_and  -> equality ( "&&" equality )*
+    equality   -> comparison ( ( "==" | "!=" ) comparison )*
+    comparison -> term ( ( "<" | "<=" | ">" | ">=" ) term )*
     term       -> factor ( ( "+" | "-" ) factor )*
     factor     -> unary ( ( "*" | "/" | "%" ) unary )*
-    unary      -> "-" unary | primary
-    primary    -> NUMBER | IDENTIFIER | "(" expression ")" 
+    unary      -> ( "-" | "!" ) unary | primary
+    primary    -> NUMBER | IDENTIFIER | "(" expression ")"
