@@ -100,6 +100,17 @@ Node *make_not(Node *operand) {
 
     n->type = NODE_NOT;
     n->operand = operand;
+    
+    return n;
+}
+
+Node *make_while(Node *condition, Node *body) {
+    Node *n = malloc(sizeof(Node));
+
+    n->type = NODE_WHILE;
+    n->condition = condition;
+    n->body = body;
+    
     return n;
 }
 
@@ -143,6 +154,10 @@ void free_node(Node *node) {
             }
         case NODE_NOT:
             free_node(node->operand);
+            break;
+        case NODE_WHILE:
+            free_node(node->condition);
+            free_node(node->body);
             break;
     }
     free(node);

@@ -26,6 +26,7 @@ static Node *parse_var_decl(Parser *p);
 static Node *parse_expr_stmt(Parser *p);
 static Node *parse_print_stmt(Parser *p);
 static Node *parse_block(Parser *p);
+static Node *parse_while_stmt(Parser *p);
 static Node *parse_if_stmt(Parser *p);
 static Node *parse_logic_or(Parser *p);
 static Node *parse_logic_and(Parser *p);
@@ -50,6 +51,8 @@ static Node *parse_statement(Parser *p) {
             return parse_if_stmt(p);
         case TOKEN_LBRACE:
             return parse_block(p);
+        case TOKEN_WHILE:
+            return parse_while_stmt(p);
         default:
             return parse_expr_stmt(p);
     }
@@ -94,7 +97,6 @@ static Node *parse_print_stmt(Parser *p) {
     expect(p, TOKEN_RPAREN, "')'");
     expect(p, TOKEN_SEMICOLON, "';'");
     return make_print(expr);
-
 }
 
 static Node *parse_block(Parser *p) {
@@ -109,6 +111,15 @@ static Node *parse_block(Parser *p) {
     }
     expect(p, TOKEN_RBRACE, "'}'");
     return b;
+}
+
+static Node *parse_while_stmt(Parser *p) {
+    expect(p, TOKEN_WHILE, "\"while\"");
+    expect(p, TOKEN_LPAREN, "'('");
+    Node *cond = parse_expression(p);
+    expect(p, TOKEN_RPAREN, "')'");
+    Node *body = parse_block(p);
+    return make_while(cond, body);
 }
 
 static Node *parse_if_stmt(Parser *p) {

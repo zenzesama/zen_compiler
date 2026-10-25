@@ -33,6 +33,7 @@ static const char *token_type_name(TokenType type) {
         case TOKEN_OR:                  return "OR";
         case TOKEN_LBRACE:              return "LBRACE";
         case TOKEN_RBRACE:              return "RBRACE";
+        case TOKEN_WHILE:               return "WHILE";
         default:                        return "UNKNOWN";
     }
 }
@@ -129,6 +130,15 @@ static void ast_test(Node *node, int depth) {
                 printf("ELSE\n");
                 ast_test(node->else_branch, depth + 2);
             }
+            break;
+        case NODE_WHILE:
+            printf("WHILE\n");
+            for (int i = 0; i < depth; i++) printf("  ");
+            printf("COND\n");
+            ast_test(node->condition, depth + 2);
+            for (int i = 0; i < depth; i++) printf("  ");
+            printf("BODY\n");
+            ast_test(node->body, depth + 2);
             break;
     }
 }

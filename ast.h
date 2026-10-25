@@ -11,7 +11,8 @@ typedef enum {
     NODE_PRINT, 
     NODE_IF, 
     NODE_BLOCK, 
-    NODE_NOT
+    NODE_NOT, 
+    NODE_WHILE
 } NodeType;
 
 typedef enum {
@@ -43,6 +44,7 @@ typedef struct Node {
     struct Node *else_branch;
     int stmt_count;
     struct Node *statements[256];
+    struct Node *body;
 } Node;
 
 typedef struct {
@@ -61,6 +63,7 @@ Node *make_if(Node *condition, Node *then_branch, Node *else_branch);
 Node *make_block();
 void block_add(Node *block, Node *stmt);
 Node *make_not(Node *operand);
+Node *make_while(Node *condition, Node *body);
 void free_node(Node *node);
 
 #endif

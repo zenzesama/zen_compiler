@@ -1,0 +1,30 @@
+var int i = 1;
+var int sum = 0;
+while (i <= 10) {
+    sum = sum + i;
+    i = i + 1;
+}
+print(sum);
+
+while (0) {
+    print(999);
+}
+
+var int n = 3;
+while (n > 0) {
+    if (n == 2) {
+        print(n);
+    }
+    n = n - 1;
+}
+
+var int a = 1;
+var int b;
+while (a <= 2) {
+    b = 1;
+    while (b <= 2) {
+        print(a * 10 + b);
+        b = b + 1;
+    }
+    a = a + 1;
+}

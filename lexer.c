@@ -14,7 +14,8 @@ static Keyword keywords[] = {
     {"int", TOKEN_INT}, 
     {"print", TOKEN_PRINT}, 
     {"if", TOKEN_IF}, 
-    {"else", TOKEN_ELSE}
+    {"else", TOKEN_ELSE}, 
+    {"while", TOKEN_WHILE}
 };
 
 #define NUM_KEYWORDS (sizeof(keywords) / sizeof(keywords[0]))

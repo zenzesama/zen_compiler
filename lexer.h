@@ -31,7 +31,8 @@ typedef enum {
     TOKEN_LOGIC_OR, 
     TOKEN_OR, 
     TOKEN_LBRACE, 
-    TOKEN_RBRACE
+    TOKEN_RBRACE, 
+    TOKEN_WHILE
 } TokenType;
 
 typedef struct {
