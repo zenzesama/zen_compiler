@@ -45,7 +45,7 @@ Handles integer variables (`var int a = 2;`), arithmetic `+ - * / %`, unary `-` 
     main.c       wires the above together, reads the file, writes out.ll
 
 ## Notes
-    - requires clang to work wirh the generated out.ll file
+    - requires clang to work with the generated out.ll file
     - int is the only type. Zero is false and nonzero is true
     - && and || evaluate both sides (no short-circuit)
     - variables are not block-scoped
