@@ -61,6 +61,30 @@ static void require_declared(const char *name) {
     }
 }
 
+static void hoist_allocas(FILE *out, Node *node) {
+    if (!node) return;
+
+    switch (node->type) {
+        case NODE_VAR_DECL:
+            fprintf(out, "%%%s = alloca i32\n", node->name);
+            break;
+        case NODE_BLOCK:
+            for (int i = 0; i < node->stmt_count; i++) {
+                hoist_allocas(out, node->statements[i]);
+            }
+            break;
+        case NODE_IF:
+            hoist_allocas(out, node->then_branch);
+            hoist_allocas(out, node->else_branch);
+            break;
+        case NODE_WHILE:
+            hoist_allocas(out, node->body);
+            break;
+        default:
+            break;
+    }
+}
+
 static char *emit(FILE *out, Node *node) {
     char *buff = malloc(128);
 
@@ -74,7 +98,6 @@ static char *emit(FILE *out, Node *node) {
 
     if (node->type == NODE_VAR_DECL) {
         declare_name(node->name);
-        fprintf(out, "%%%s = alloca i32\n", node->name);
         if (node->operand) {
             char *init = emit(out, node->operand);
             fprintf(out, "store i32 %s, ptr %%%s\n", init, node->name);
@@ -199,6 +222,23 @@ static char *emit(FILE *out, Node *node) {
         return buff;
     }
 
+    if (node->type == NODE_WHILE) {
+        int id = ++label_count;
+        fprintf(out, "br label %%while.cond.%d\n", id);
+        fprintf(out, "while.cond.%d:\n", id);
+        char *cond = emit(out, node->condition);
+        int cmp = ++temp_count;
+        fprintf(out, "%%%d = icmp ne i32 %s, 0\n", cmp, cond);
+        fprintf(out, "br i1 %%%d, label %%while.body.%d, label %%while.end.%d\n", cmp, id, id);
+        fprintf(out, "while.body.%d:\n", id);
+        char *body_result = emit(out, node->body);
+        free(body_result);
+        fprintf(out, "br label %%while.cond.%d\n", id);
+        fprintf(out, "while.end.%d:\n", id);
+        free(cond);
+        return buff;
+    }
+
     fprintf(stderr, "Code gen error: Bad node type.\n");
     exit(1);
     return buff;
@@ -211,6 +251,10 @@ void codegen_start(FILE *out, Program *prgm) {
     
     fprintf(out, "define i32 @main() {\n");
     fprintf(out, "entry:\n");
+
+    for (int i = 0; i < prgm->count; i++) {
+        hoist_allocas(out, prgm->statements[i]);
+    }
 
     for (int i = 0; i < prgm->count; i++) {
         char *result = emit(out, prgm->statements[i]);

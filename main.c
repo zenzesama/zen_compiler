@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <string.h>
 #include "lexer.h"
 #include "parser.h"
 #include "ast.h"
@@ -29,26 +29,31 @@ static char *read_file(const char *path) {
 
 int main(int argc, char **argv) {
     int lexerTest = 0, prgmTest = 0;
-    int opt;
-    
-    while ((opt = getopt(argc, argv, "d")) != -1) {
-        switch (opt) {
-            case 'd':
-                lexerTest = 1;
-                prgmTest = 1;
-                break;
-            default:
-                fprintf(stderr, "Please provide a file and flags.\n");
-                return 1;
+    char *filename = NULL;
+
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-d") == 0) {
+            lexerTest = 1;
+            prgmTest = 1;
+        }
+        else if (argv[i][0] == '-') {
+            fprintf(stderr, "Unknown flag: %s\n", argv[i]);
+        }
+        else if (filename == NULL) {
+            filename = argv[i];
+        }
+        else {
+            fprintf(stderr, "Only one input file allowed.\n");
+            return 1;
         }
     }
 
-    if (optind >= argc) {
-        fprintf(stderr, "Please provide a file to compile.\n");
+    if (!filename) {
+        fprintf(stderr, "Provide file to compile.\n");
         return 1;
     }
-    
-    char *source = read_file(argv[optind]);
+
+    char *source = read_file(filename);
 
     Lexer lexer;
     lexer_init(&lexer, source);

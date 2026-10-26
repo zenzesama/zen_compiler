@@ -1,3 +1,0 @@
-TO-DO List for compiler.
-
-[] - make the arguemnts non-posix compilant

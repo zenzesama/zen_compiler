@@ -2,19 +2,33 @@
 
 Compiler for a toy language called `zen`, written in C, targeting LLVM IR.
 <br>
-Handles integer variables (`var int a = 2;`), arithmetic `+ - * / %`, unary `-` and `!`, comparisons `== != < <= > >=`, logic `&& ||`, `if`/`else` with `{ }` blocks, and `print(expr);`. Use the `-d` flag for debug mode (token dump and AST).
+Handles integer variables (`var int a = 2;`), arithmetic `+ - * / %`, unary `-` and `!`, comparisons `== != < <= > >=`, logic `&& ||`, `if`/`else`/`while` with `{ }` blocks, and `print(expr);`. Use the `-d` flag for debug mode (token dump and AST).
 
 ## Example
-    var int a = 7;
-    var int b = 3;
-    var int sum = a + b;
-    print(sum);
 
-    if (a > b && b != 0) {
-        print(a);
+    var int a = 7;
+    var int b;
+    b = (a + 1) * 2 - a % 4;
+    print(-b);
+    print(b / 2);
+    
+    if (a > b) {
+        print(1);
+    } else if (a != 7 || b <= 3) {
+        print(2);
     } else {
-        print(b);
+        print(3);
     }
+    print(a >= 7 && !(b == 0));
+    
+    var int i = 0;
+    var int sum = 0;
+    while (i < 4) {
+        var int sq = i * i;
+        sum = sum + sq;
+        i = i + 1;
+    }
+    print(sum);
 
 ## Run
     make zenc
@@ -31,13 +45,15 @@ Handles integer variables (`var int a = 2;`), arithmetic `+ - * / %`, unary `-` 
     main.c       wires the above together, reads the file, writes out.ll
 
 ## Notes
-    - int is the only type; nonzero is true
+    - requires clang to work wirh the generated out.ll file
+    - int is the only type. Zero is false and nonzero is true
     - && and || evaluate both sides (no short-circuit)
     - variables are not block-scoped
 
 ## Language Grammar
     program    -> statement* EOF
-    statement  -> varDecl | assignStmt | exprStmt | printStmt | ifStmt | block
+    statement  -> varDecl | assignStmt | exprStmt | printStmt | ifStmt | whileStmt | block
+    whileStmt  -> "while" "(" expression ")" block
     varDecl    -> "var" type IDENTIFIER ( "=" expression )? ";"
     assignStmt -> IDENTIFIER "=" expression ";"
     exprStmt   -> expression ";"
