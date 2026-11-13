@@ -34,6 +34,9 @@ static const char *token_type_name(TokenType type) {
         case TOKEN_LBRACE:              return "LBRACE";
         case TOKEN_RBRACE:              return "RBRACE";
         case TOKEN_WHILE:               return "WHILE";
+        case TOKEN_FUNC:                return "FUNC";
+        case TOKEN_RETURN:              return "RETURN";
+        case TOKEN_COMMA:               return "COMMA (,)";
         default:                        return "UNKNOWN";
     }
 }
@@ -140,6 +143,31 @@ static void ast_test(Node *node, int depth) {
             printf("BODY\n");
             ast_test(node->body, depth + 2);
             break;
+        case NODE_FUNC:
+            printf("FUNC \" %s \"", node->name);
+            {
+            printf("(");
+            int n = node->parm_count;
+            for (int i = 0; i < n; i++) {
+                printf(" %s ", node->parms[i]);
+            }
+            printf(")\n");
+            }
+            ast_test(node->body, depth + 1);
+            break;
+        case NODE_RETURN:
+            printf("RETURN\n");
+            ast_test(node->operand, depth + 1);
+            break;
+        case NODE_CALL:
+            printf("CALL \"%s\"\n", node->name);
+            {
+            int n = node->arg_count;
+            for (int i = 0; i < n; i++) {
+                ast_test(node->args[i], depth + 1);
+            }
+            break;
+            }
     }
 }
 

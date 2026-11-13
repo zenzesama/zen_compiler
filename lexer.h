@@ -32,7 +32,10 @@ typedef enum {
     TOKEN_OR, 
     TOKEN_LBRACE, 
     TOKEN_RBRACE, 
-    TOKEN_WHILE
+    TOKEN_WHILE, 
+    TOKEN_FUNC, 
+    TOKEN_RETURN, 
+    TOKEN_COMMA
 } TokenType;
 
 typedef struct {

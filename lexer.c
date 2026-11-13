@@ -15,7 +15,9 @@ static Keyword keywords[] = {
     {"print", TOKEN_PRINT}, 
     {"if", TOKEN_IF}, 
     {"else", TOKEN_ELSE}, 
-    {"while", TOKEN_WHILE}
+    {"while", TOKEN_WHILE}, 
+    {"func", TOKEN_FUNC}, 
+    {"return", TOKEN_RETURN}
 };
 
 #define NUM_KEYWORDS (sizeof(keywords) / sizeof(keywords[0]))
@@ -194,6 +196,9 @@ Token lexer_next(Lexer *lex) {
             break;
         case '}':
             t.type = TOKEN_RBRACE;
+            break;
+        case ',':
+            t.type = TOKEN_COMMA;
             break;
         default:
             fprintf(stderr, "Lexer error: Unexpected token %c.\n", c);

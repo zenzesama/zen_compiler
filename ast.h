@@ -12,7 +12,10 @@ typedef enum {
     NODE_IF, 
     NODE_BLOCK, 
     NODE_NOT, 
-    NODE_WHILE
+    NODE_WHILE, 
+    NODE_FUNC, 
+    NODE_RETURN, 
+    NODE_CALL
 } NodeType;
 
 typedef enum {
@@ -45,6 +48,10 @@ typedef struct Node {
     int stmt_count;
     struct Node *statements[256];
     struct Node *body;
+    char parms[8][64];
+    int parm_count;
+    struct Node *args[8];
+    int arg_count;
 } Node;
 
 typedef struct {
@@ -64,6 +71,11 @@ Node *make_block();
 void block_add(Node *block, Node *stmt);
 Node *make_not(Node *operand);
 Node *make_while(Node *condition, Node *body);
+Node *make_func(char *name);
+void func_add_parm(Node *f, char *pname);
+Node *make_return(Node *operand);
+Node *make_call(char *name);
+void call_add_arg(Node *call, Node *arg);
 void free_node(Node *node);
 
 #endif

@@ -36,6 +36,8 @@ static Node *parse_additive(Parser *p);
 static Node *parse_term(Parser *p);
 static Node *parse_factor(Parser *p);
 static Node *parse_primary(Parser *p);
+static Node *parse_func_decl(Parser *p);
+static Node *parse_return_stmt(Parser *p);
 
 static Node *parse_expression(Parser *p) {
     return parse_logic_or(p);
@@ -53,6 +55,8 @@ static Node *parse_statement(Parser *p) {
             return parse_block(p);
         case TOKEN_WHILE:
             return parse_while_stmt(p);
+        case TOKEN_RETURN:
+            return parse_return_stmt(p);
         default:
             return parse_expr_stmt(p);
     }
@@ -242,12 +246,58 @@ static Node *parse_primary(Parser *p) {
         return n;
     }
     if (p->current.type == TOKEN_IDENTIFIER) {
-        Node *n = make_identifier(p->current.text);
+        char name[64];
+        strcpy(name, p->current.text);
         advance(p);
-        return n;
+        if (p->current.type == TOKEN_LPAREN) {
+            Node *call = make_call(name);
+            advance(p);
+            if (p->current.type != TOKEN_RPAREN) {
+                while(1) {
+                    call_add_arg(call, parse_expression(p));
+                    if (p->current.type != TOKEN_COMMA) break;
+                    advance(p);
+
+                }
+            }
+            expect(p, TOKEN_RPAREN, "')'");
+            return call;
+        }
+        return make_identifier(name);
     }
     fprintf(stderr, "Parser error: Expected a number, '(' or Identifier.\n");
     exit(1);
+}
+
+static Node *parse_func_decl(Parser *p) {
+    expect(p, TOKEN_FUNC, "'FUNC'");
+    char name[64];
+    strcpy(name, p->current.text);
+    expect(p, TOKEN_IDENTIFIER, "'identifier'");
+    expect(p, TOKEN_LPAREN, "'('");
+    Node *f = make_func(name);
+    if (p->current.type != TOKEN_RPAREN) {
+        while (1) {
+            expect(p, TOKEN_INT, "'int'");
+            char pname[64];
+            strcpy(pname, p->current.text);
+            expect(p, TOKEN_IDENTIFIER, "'identifier'");
+            func_add_parm(f, pname);
+            if (p->current.type != TOKEN_COMMA) break;
+            advance(p);
+        }
+    }
+    expect(p, TOKEN_RPAREN, "')'");
+    expect(p, TOKEN_INT, "'int'");
+    f->body = parse_block(p);
+    return f;
+}
+
+static Node *parse_return_stmt(Parser *p) {
+    expect(p, TOKEN_RETURN, "'return'");
+    Node *expr = parse_expression(p);
+    expect(p, TOKEN_SEMICOLON, "';'");
+    return make_return(expr);
 }
 
 void parser_start(Parser *p, Program *prgm) {
@@ -257,6 +307,11 @@ void parser_start(Parser *p, Program *prgm) {
             fprintf(stderr, "Parser error: Program can't be more than 256 statements.\n");
             exit(1);
         }
-        prgm->statements[prgm->count++] = parse_statement(p);
+        if (p->current.type == TOKEN_FUNC) {
+            prgm->statements[prgm->count++] = parse_func_decl(p);
+        }
+        else {
+            prgm->statements[prgm->count++] = parse_statement(p);
+        }
     }
 }

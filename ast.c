@@ -114,6 +114,51 @@ Node *make_while(Node *condition, Node *body) {
     return n;
 }
 
+Node *make_func(char *name) {
+    Node *n = malloc(sizeof(Node));
+
+    n->type = NODE_FUNC;
+    strcpy(n->name, name);
+    n->parm_count = 0;
+
+    return n;
+}
+
+void func_add_parm(Node *f, char *pname) {
+    if (f->parm_count >= 8) {
+        fprintf(stderr, "AST Error: Can't have more than 8 parameters. \n");
+        exit(1);
+    }
+    strcpy(f->parms[f->parm_count++], pname);
+}
+
+Node *make_return(Node *operand) {
+    Node *n = malloc(sizeof(Node));
+
+    n->type = NODE_RETURN;
+    n->operand = operand;
+
+    return n;
+}
+
+Node *make_call(char *name) {
+    Node *n = malloc(sizeof(Node));
+
+    n->type = NODE_CALL;
+    strcpy(n->name, name);
+    n->arg_count = 0;
+
+    return n;
+}
+
+void call_add_arg(Node *call, Node *arg) {
+    if (call->arg_count >= 8) {
+        fprintf(stderr, "AST Error: Can't have more than 8 arguments. \n");
+        exit(1);
+    }
+    call->args[call->arg_count++] = arg;
+}
+
 void free_node(Node *node) {
     if (!node) 
         return;
@@ -158,6 +203,20 @@ void free_node(Node *node) {
         case NODE_WHILE:
             free_node(node->condition);
             free_node(node->body);
+            break;
+        case NODE_FUNC:
+            free_node(node->body);
+            break;
+        case NODE_RETURN:
+            free_node(node->operand);
+            break;
+        case NODE_CALL:
+            {
+                int n = node->arg_count;
+                while (n--) {
+                    free_node(node->args[n]);
+                }
+            }
             break;
     }
     free(node);
