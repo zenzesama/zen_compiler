@@ -1,27 +1,20 @@
+func fact(int n) int {
+    if (n <= 1) {
+        return 1;
+    }
+    return n * fact(n - 1);
+}
+
 func add(int a, int b) int {
     return a + b;
 }
 
-var int a = 7;
-var int b;
-b = (a + 1) * 2 - a % 4;
-print(-b);
-print(b / 2);
-
-if (a > b) {
-    print(1);
-} else if (a != 7 || b <= 3) {
-    print(2);
-} else {
-    print(3);
-}
-print(a >= 7 && !(b == 0));
-
-var int i = 0;
+var int i = 1;
 var int sum = 0;
-while (i < 4) {
-    var int sq = i * i;
-    sum = sum + sq;
+while (i <= 4) {
+    sum = add(sum, fact(i));
     i = i + 1;
 }
+
 print(sum);
+print(fact(5));

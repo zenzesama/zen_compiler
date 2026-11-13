@@ -2,33 +2,33 @@
 
 Compiler for a toy language called `zen`, written in C, targeting LLVM IR.
 <br>
-Handles integer variables (`var int a = 2;`), arithmetic `+ - * / %`, unary `-` and `!`, comparisons `== != < <= > >=`, logic `&& ||`, `if`/`else`/`while` with `{ }` blocks, and `print(expr);`. Use the `-d` flag for debug mode (token dump and AST).
+Handles integer variables (`var int a = 2;`), arithmetic `+ - * / %`, unary `-` and `!`, comparisons `== != < <= > >=`, logic `&& ||`, `if`/`else`/`while` with `{ }` blocks, functions with recursion (`func f(int x) int`), and `print(expr);`. Use the `-d` flag for debug mode (token dump and AST).
 
 ## Example
 
-    var int a = 7;
-    var int b;
-    b = (a + 1) * 2 - a % 4;
-    print(-b);
-    print(b / 2);
-    
-    if (a > b) {
-        print(1);
-    } else if (a != 7 || b <= 3) {
-        print(2);
-    } else {
-        print(3);
+func fact(int n) int {
+    if (n <= 1) {
+        return 1;
     }
-    print(a >= 7 && !(b == 0));
-    
-    var int i = 0;
-    var int sum = 0;
-    while (i < 4) {
-        var int sq = i * i;
-        sum = sum + sq;
-        i = i + 1;
-    }
-    print(sum);
+    return n * fact(n - 1);
+}
+
+func add(int a, int b) int {
+    return a + b;
+}
+
+var int i = 1;
+var int sum = 0;
+while (i <= 4) {
+    sum = add(sum, fact(i));
+    i = i + 1;
+}
+print(sum);
+print(fact(5));
+
+Output:
+33
+120
 
 ## Run
     make zenc
@@ -47,18 +47,25 @@ Handles integer variables (`var int a = 2;`), arithmetic `+ - * / %`, unary `-` 
 ## Notes
     - requires clang to work with the generated out.ll file
     - int is the only type. Zero is false and nonzero is true
+    - top-level statements run as an implicit main; a top-level `return n;` sets the exit code
+    - functions can't see top-level variables; max 8 parameters per function and 8 arguments per call
     - && and || evaluate both sides (no short-circuit)
-    - variables are not block-scoped
+    - variables are scoped per function, not per block
+    - no comments
 
 ## Language Grammar
-    program    -> statement* EOF
-    statement  -> varDecl | assignStmt | exprStmt | printStmt | ifStmt | whileStmt | block
-    whileStmt  -> "while" "(" expression ")" block
+    program    -> ( funcDecl | statement )* EOF
+    funcDecl   -> "func" IDENTIFIER "(" params? ")" type block
+    params     -> type IDENTIFIER ( "," type IDENTIFIER )*
+    statement  -> varDecl | assignStmt | exprStmt | printStmt | returnStmt
+                  | ifStmt | whileStmt | block
     varDecl    -> "var" type IDENTIFIER ( "=" expression )? ";"
     assignStmt -> IDENTIFIER "=" expression ";"
     exprStmt   -> expression ";"
     printStmt  -> "print" "(" expression ")" ";"
+    returnStmt -> "return" expression ";"
     ifStmt     -> "if" "(" expression ")" block ( "else" ( ifStmt | block ) )?
+    whileStmt  -> "while" "(" expression ")" block
     block      -> "{" statement* "}"
     type       -> "int"
     expression -> logic_or
@@ -69,4 +76,5 @@ Handles integer variables (`var int a = 2;`), arithmetic `+ - * / %`, unary `-` 
     term       -> factor ( ( "+" | "-" ) factor )*
     factor     -> unary ( ( "*" | "/" | "%" ) unary )*
     unary      -> ( "-" | "!" ) unary | primary
-    primary    -> NUMBER | IDENTIFIER | "(" expression ")"
+    primary    -> NUMBER | IDENTIFIER | IDENTIFIER "(" args? ")" | "(" expression ")"
+    args       -> expression ( "," expression )*

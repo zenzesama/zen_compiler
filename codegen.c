@@ -9,6 +9,11 @@ static int temp_count = 0;
 static char declared[128][64];
 static int declared_count = 0;
 static int label_count = 0;
+static char funcs[64][64];
+static int func_params[64];
+static int func_count = 0;
+
+static char *emit(FILE *out, Node *node);
 
 static const char *op_instr(OpKind op) {
     switch (op) {
@@ -61,6 +66,38 @@ static void require_declared(const char *name) {
     }
 }
 
+static int find_func(const char *name) {
+    for (int i = 0; i < func_count; i++) {
+        if (strcmp(funcs[i], name) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static void register_func(Node *f) {
+    if (strcmp(f->name, "main") == 0 || 
+        strcmp(f->name, "printf") == 0 || 
+        strcmp(f->name, "fmt") == 0) {
+        fprintf(stderr, "Code gen error: \"%s\" redeclared.\n", f->name);
+        exit(1);
+    }
+
+    if (find_func(f->name) != -1) {
+        fprintf(stderr, "Code gen error: Function \"%s\" redeclared.\n", f->name);
+        exit(1);
+    }
+
+    if (func_count >= 64) {
+        fprintf(stderr, "Code gen error: Too many functions, cap is 64.\n");
+        exit(1);
+    }
+
+    strcpy(funcs[func_count], f->name);
+    func_params[func_count] = f->parm_count;
+    func_count++;
+}
+
 static void hoist_allocas(FILE *out, Node *node) {
     if (!node) return;
 
@@ -85,8 +122,46 @@ static void hoist_allocas(FILE *out, Node *node) {
     }
 }
 
+static void emit_function(FILE *out, Node *f) {
+    temp_count = 0;
+    declared_count = 0;
+
+    fprintf(out, "define i32 @%s(", f->name);
+
+    for (int i = 0; i < f->parm_count; i++) {
+        if (i > 0) {
+            fprintf(out, ", ");
+        }
+        fprintf(out, "i32 %%%s.arg", f->parms[i]);
+    }
+
+    fprintf(out, ") {\n");
+    fprintf(out, "entry:\n");
+
+    for (int i = 0; i < f->parm_count; i++) {
+        declare_name(f->parms[i]);
+        fprintf(out, "%%%s = alloca i32\n", f->parms[i]);
+        fprintf(out, "store i32 %%%s.arg, ptr %%%s\n", f->parms[i], f->parms[i]);
+    }
+
+    hoist_allocas(out, f->body);
+    char *result = emit(out, f->body);
+    free(result);
+    fprintf(out, "ret i32 0\n");
+    fprintf(out, "}\n\n");
+}
+
 static char *emit(FILE *out, Node *node) {
     char *buff = malloc(128);
+
+    if (node->type == NODE_RETURN) {
+        char *val = emit(out, node->operand);
+        fprintf(out, "ret i32 %s\n", val);
+        free(val);
+        int id = ++label_count;
+        fprintf(out, "ret.after.%d:\n", id);
+        return buff;
+    }
 
     if (node->type == NODE_PRINT) {
         char *val = emit(out, node->operand);
@@ -239,6 +314,41 @@ static char *emit(FILE *out, Node *node) {
         return buff;
     }
 
+    if (node->type == NODE_CALL) {
+        int idx = find_func(node->name);
+        if (idx == -1) {
+            fprintf(stderr, "Code gen error: Unidentified function \"%s\".\n", node->name);
+            exit(1);
+        }
+        if (node->arg_count != func_params[idx]) {
+            fprintf(stderr, "Code gen error: Function \"%s\" expects %d arguments, for %d.\n", 
+                    node->name, 
+                    func_params[idx], 
+                    node->arg_count);
+            exit(1);
+        }
+        char *vals[8];
+        if (node->arg_count > 8) {
+            fprintf(stderr, "Code gen error: Maximum 8 function arguments allowed.\n");
+            exit(1);
+        }
+        for (int i = 0; i < node->arg_count; i++) {
+            vals[i] = emit(out, node->args[i]);
+        }
+        int id = ++temp_count;
+        fprintf(out, "%%%d = call i32 @%s(", id, node->name);
+        for (int i = 0; i < node->arg_count; i++) {
+            if (i > 0) {
+                fprintf(out, ", ");
+            }
+            fprintf(out, "i32 %s", vals[i]);
+            free(vals[i]);
+        }
+        fprintf(out, ")\n");
+        sprintf(buff, "%%%d", id);
+        return buff;
+    }
+
     fprintf(stderr, "Code gen error: Bad node type.\n");
     exit(1);
     return buff;
@@ -248,17 +358,40 @@ void codegen_start(FILE *out, Program *prgm) {
     fprintf(out, "declare i32 @printf(ptr, ...)\n\n");
 
     fprintf(out, "@fmt = private constant [4 x i8] c\"%%d\\0A\\00\"\n\n");
-    
+
+    for (int i = 0; i < prgm->count; i++) {
+        Node *node = prgm->statements[i];
+        if (node->type == NODE_FUNC) {
+            register_func(node);
+        }
+    }
+
+    for (int i = 0; i < prgm->count; i++) {
+        Node *node = prgm->statements[i];
+        if (node->type == NODE_FUNC) {
+            emit_function(out, node);
+        }
+    }
+
+    temp_count = 0;
+    declared_count = 0;
+
     fprintf(out, "define i32 @main() {\n");
     fprintf(out, "entry:\n");
 
     for (int i = 0; i < prgm->count; i++) {
-        hoist_allocas(out, prgm->statements[i]);
+        Node *node = prgm->statements[i];
+        if (node->type != NODE_FUNC) {
+            hoist_allocas(out, node);
+        }
     }
 
     for (int i = 0; i < prgm->count; i++) {
-        char *result = emit(out, prgm->statements[i]);
-        free(result);
+        Node *node = prgm->statements[i];
+        if (node->type != NODE_FUNC) {
+            char *result = emit(out, node);
+            free(result);
+        }
     }
 
     fprintf(out, "ret i32 0\n"); 
