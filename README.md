@@ -6,29 +6,31 @@ Handles integer variables (`var int a = 2;`), arithmetic `+ - * / %`, unary `-` 
 
 ## Example
 
-func fact(int n) int {
-    if (n <= 1) {
-        return 1;
+    func fact(int n) int {
+        if (n <= 1) {
+            return 1;
+        }
+        return n * fact(n - 1);
     }
-    return n * fact(n - 1);
-}
 
-func add(int a, int b) int {
-    return a + b;
-}
+    func add(int a, int b) int {
+        return a + b;
+    }
 
-var int i = 1;
-var int sum = 0;
-while (i <= 4) {
-    sum = add(sum, fact(i));
-    i = i + 1;
-}
-print(sum);
-print(fact(5));
+    var int i = 1;
+    var int sum = 0;
+    while (i <= 4) {
+        sum = add(sum, fact(i));
+        i = i + 1;
+    }
+    print(sum);
+    print(fact(5));
 
 Output:
-33
-120
+
+    33
+    120
+
 
 ## Run
     make zenc
